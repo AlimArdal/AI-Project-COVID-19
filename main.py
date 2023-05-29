@@ -1,5 +1,9 @@
 import pandas as pd
 import numpy as np
+#import seaborn as sns; sns.set()
+
+
+#a=sns.distplot(data)
 
 # COVID19_line_list_data.csv
 print("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
@@ -44,13 +48,14 @@ data = data.dropna()
 print(data)
 print("----------------------------------------------")
 
-
-
+data2=data.values().astype(str)
+print (data2)
 
 # Calculer la matrice de corrélation
-#corr_matrix = data.corr()
+corr_matrix = data2.corr()
+print(corr_matrix)
 
 # Afficher les corrélations avec la variable cible
-#target_variable = 'age'
-#print(corr_matrix[target_variable].sort_values(ascending=False))
-#print("----------------------------------------------")
+target_variable = 'age'
+print(corr_matrix[target_variable].sort_values(ascending=False))
+print("----------------------------------------------")
