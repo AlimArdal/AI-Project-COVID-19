@@ -1,12 +1,18 @@
 import pandas as pd
 import numpy as np
 from datetime import datetime
+import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
 
 def parse_date(date_string):
     try:
         return pd.to_datetime(date_string, format='%m/%d/%Y')
     except ValueError:
-        return pd.to_datetime(date_string, format='%d-%m-%Y')
+        try:
+            return pd.to_datetime(date_string, format='%d-%m-%Y')
+        except ValueError:
+            return pd.NaT
 
 # COVID19_line_list_data.csv
 print("------------------------------------------------------------------------------------------------------------------------------------------------------------------------------")
@@ -18,13 +24,7 @@ print("----------------------------------------------")
 # DATES --------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def is_bad_date(date_string):
-    if not isinstance(date_string, str):
-        return True
-    try:
-        datetime.strptime(date_string, date_format)
-        return False
-    except ValueError:
-        return True
+    return False
     
 data['reporting date'] = data['reporting date'].apply(parse_date)
 data['reporting date'] = data['reporting date'].dt.strftime('%d/%m/%Y')
@@ -41,27 +41,23 @@ median_date = data['symptom_onset'].dropna().median()
 data['symptom_onset'] = data['symptom_onset'].fillna(median_date)
 data['symptom_onset'] = data['symptom_onset'].apply(lambda x: x.toordinal())
 
-date_format = "%d-%m-%Y"
-bad_dates = data['hosp_visit_date'].apply(is_bad_date)
-data = data.loc[~bad_dates]
-
 data['hosp_visit_date'] = data['hosp_visit_date'].apply(parse_date)
 data['hosp_visit_date'] = data['hosp_visit_date'].dt.strftime('%d/%m/%Y')
-data['hosp_visit_date'] = pd.to_datetime(data['hosp_visit_date'], format='%d/%m/%Y')
+data['hosp_visit_date'] = pd.to_datetime(data['hosp_visit_date'], format='%d/%m/%Y', errors='coerce')
 median_date2 = data['hosp_visit_date'].dropna().median()
 data['hosp_visit_date'] = data['hosp_visit_date'].fillna(median_date2)
 data['hosp_visit_date'] = data['hosp_visit_date'].apply(lambda x: x.toordinal())
 
 data['exposure_start'] = data['exposure_start'].apply(parse_date)
 data['exposure_start'] = data['exposure_start'].dt.strftime('%d/%m/%Y')
-data['exposure_start'] = pd.to_datetime(data['exposure_start'], format='%d/%m/%Y')
+data['exposure_start'] = pd.to_datetime(data['exposure_start'], format='%d/%m/%Y', errors='coerce')
 median_date3 = data['exposure_start'].dropna().median()
 data['exposure_start'] = data['exposure_start'].fillna(median_date3)
 data['exposure_start'] = data['exposure_start'].apply(lambda x: x.toordinal())
 
 data['exposure_end'] = data['exposure_end'].apply(parse_date)
 data['exposure_end'] = data['exposure_end'].dt.strftime('%d/%m/%Y')
-data['exposure_end'] = pd.to_datetime(data['exposure_end'], format='%d/%m/%Y')
+data['exposure_end'] = pd.to_datetime(data['exposure_end'], format='%d/%m/%Y', errors='coerce')
 median_date4 = data['exposure_end'].dropna().median()
 data['exposure_end'] = data['exposure_end'].fillna(median_date4)
 data['exposure_end'] = data['exposure_end'].apply(lambda x: x.toordinal())
@@ -94,34 +90,31 @@ print("----------------------------------------------")
 print(data.dtypes)
 
 print("----------------------------------------------")
+
 # Calculer la corrélation entre les variables 'age' et 'death'
 corr = data['age'].corr(data['death'])
 print(f"La corrélation entre l'âge et la mort est de {corr:.2f}")
 print("----------------------------------------------")
 
 
-corr7 = data[['age','recovered','visiting Wuhan','from Wuhan','case_in_country','If_onset_approximated','death','reporting date','symptom_onset','hosp_visit_date','exposure_start','exposure_end']].corr().apply(lambda x: round(x, 2))
+corr = data[['age','recovered','visiting Wuhan','from Wuhan','case_in_country','If_onset_approximated','death','reporting date','symptom_onset','hosp_visit_date','exposure_start','exposure_end']].corr().apply(lambda x: round(x, 2))
 
-corr2 = data['age'].corr(data['recovered'])
-corr3 = data['age'].corr(data['visiting Wuhan'])
-corr4 = data['age'].corr(data['from Wuhan'])
-corr5 = data['visiting Wuhan'].corr(data['from Wuhan'])
-
-print(corr7)
+print(corr)
 print("----------------------------------------------")
-
-
-# Supprimer les lignes contenant des valeurs manquantes
-#data = data.dropna()
-#print(data)
-#print("----------------------------------------------")
 
 
 # Calculer la matrice de corrélation
-corr_matrix = data.corr()
-print(corr_matrix)
+'''corr_matrix = data.corr()
+print(corr_matrix)'''
 
-# Afficher les corrélations avec la variable cible
-target_variable = 'age'
-print(corr_matrix[target_variable].sort_values(ascending=False))
-print("----------------------------------------------")
+# Standardize the data
+scaler = StandardScaler()
+data_std = scaler.fit_transform(corr)
+
+# Perform PCA
+pca = PCA(n_components=2)
+pca_data = pca.fit_transform(data_std)
+
+# Plot scatter plot
+plt.scatter(pca_data[:, 0], pca_data[:, 1])
+plt.show()
