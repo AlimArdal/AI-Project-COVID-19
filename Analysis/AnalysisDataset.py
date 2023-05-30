@@ -107,6 +107,28 @@ print("----------------------------------------------")
 '''corr_matrix = data.corr()
 print(corr_matrix)'''
 
+
+
+# BayesNet B -------------------------------------------------------------------------------------------------------------
+# Calculate the probability of being a true patient given that the person has symptoms and visited Wuhan
+p_patient_given_symptoms_wuhan = (data['visiting Wuhan'] == 1) & (data['symptom_onset'].notnull())
+p_symptoms_wuhan = ((data['visiting Wuhan'] == 1) & (data['symptom_onset'].notnull())).mean()
+p_patient_and_symptoms_wuhan = p_patient_given_symptoms_wuhan.mean()
+p_patient_given_symptoms_wuhan = p_patient_and_symptoms_wuhan / p_symptoms_wuhan
+
+print(f"The probability of being a true patient given that the person has symptoms and visited Wuhan is {p_patient_given_symptoms_wuhan:.2f}")
+
+# BayesNet C -------------------------------------------------------------------------------------------------------------
+# Calculate the probability of dying given that the person visited Wuhan
+p_death_given_wuhan = (data['visiting Wuhan'] == 1) & (data['death'] == 1)
+p_wuhan = (data['visiting Wuhan'] == 1).mean()
+p_death_and_wuhan = p_death_given_wuhan.mean()
+p_death_given_wuhan = p_death_and_wuhan / p_wuhan
+
+print(f"The probability of dying given that the person visited Wuhan is {p_death_given_wuhan:.2f}")
+
+
+
 # Standardize the data
 scaler = StandardScaler()
 data_std = scaler.fit_transform(corr)
