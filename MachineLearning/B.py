@@ -36,6 +36,8 @@ reg.fit(X_train, y_train)
 # Make predictions on test set
 y_pred = reg.predict(X_test)
 
+print(f"The predicted age based on gender and country is: {y_pred.mean():.2f} years old")
+
 # Evaluate model performance using mean squared error (MSE)
 mse = mean_squared_error(y_test, y_pred)
 
