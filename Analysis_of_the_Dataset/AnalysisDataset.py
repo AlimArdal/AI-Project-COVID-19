@@ -110,6 +110,7 @@ print(corr_matrix)'''
 
 
 # BayesNet B -------------------------------------------------------------------------------------------------------------
+
 # Calculate the probability of being a true patient given that the person has symptoms and visited Wuhan
 p_patient_given_symptoms_wuhan = (data['visiting Wuhan'] == 1) & (data['symptom_onset'].notnull())
 p_symptoms_wuhan = ((data['visiting Wuhan'] == 1) & (data['symptom_onset'].notnull())).mean()

@@ -7,15 +7,22 @@ from sklearn.impute import SimpleImputer
 # Load data
 data = pd.read_csv('COVID19_line_list_data.csv')
 
-# One-hot encode gender column
-data = pd.get_dummies(data, columns=['gender'])
+# Convert age column to numeric and fill missing values with median age
+data['age'] = pd.to_numeric(data['age'], errors='coerce')
+data['age'] = data['age'].fillna(data['age'].median())
 
-# Select features and target variable
-X = data[['gender_female', 'gender_male', 'visiting Wuhan', 'from Wuhan']]
+# One-hot encode categorical columns (gender and country)
+data = pd.get_dummies(data, columns=['gender', 'country'])
+
+# Select only numeric columns
+data = data.select_dtypes(include='number')
+
+# Select features (X) and target variable (y)
+X = data.drop(['age'], axis=1)
 y = data['age']
 
 # Impute missing values with column mean
-imputer = SimpleImputer()
+imputer = SimpleImputer(strategy='most_frequent')
 X = imputer.fit_transform(X)
 y = imputer.fit_transform(y.values.reshape(-1, 1)).ravel()
 
@@ -29,7 +36,7 @@ reg.fit(X_train, y_train)
 # Make predictions on test set
 y_pred = reg.predict(X_test)
 
-# Evaluate model performance using mean squared error
+# Evaluate model performance using mean squared error (MSE)
 mse = mean_squared_error(y_test, y_pred)
 
 print(f"Mean squared error: {mse:.2f}")
